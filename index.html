@@ -1,18 +1,36 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="fr">
     <head>
-        <title>Datalk</title>
-        <link rel="stylesheet" href="">
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+          $(document).ready(function(){
+
+            var socket = io.connect('http://localhost');
+            socket.on('incorrect', function () {
+              $('#user').html("You have to enter a username.");
+            });
+
+            socket.on('correct', function(nickname){
+              $('#user').html("User " + nickname + " logged.");
+            });
+
+            $('#connect').click(function(e) {
+              e.preventDefault();
+              var nickname = $("#username").val();
+              socket.emit('login', nickname);
+            });
+          })
+        </script>
     </head>
 
     <body>
-          <script></script>
-          <h1>Datalk</h1>
-          <form method="get" action="/chat">
+        <h1>Datalk</h1>
+          <form id="connect_form">
             <label for="username">Username</label>
             <input type="text" id="username" name="username">
-            <button type="submit">Connect</button>
+            <button type="submit" id="connect">Connect</button>
           </form>
+          <div id="user"></div>
     </body>
 </html>

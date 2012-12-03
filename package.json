@@ -7,7 +7,8 @@
     "flatiron": "0.3.0",
     "director": "1.1.8",
     "resourceful":"*",
-    "mongodb" : "1.2.0"
+    "mongodb" : "1.2.0",
+    "socket.io": "0.9.0"
   },
   "devDependencies": {
     "api-easy": "0.3.2",

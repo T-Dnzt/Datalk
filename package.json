@@ -6,7 +6,8 @@
     "union": "0.3.0",
     "flatiron": "0.3.0",
     "director": "1.1.8",
-    "resourceful":"*"
+    "resourceful":"*",
+    "mongodb" : "1.2.0"
   },
   "devDependencies": {
     "api-easy": "0.3.2",

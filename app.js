@@ -4,15 +4,16 @@ var flatiron = require('flatiron'),
     routes = require('./routes.js'),
     mongodb = require('mongodb'),
     Database = mongodb.Db,
-    MongoServer = mongodb.Server;
+    MongoServer = mongodb.Server,
+    connect = require('connect');
 
 var database = new Database('Datalk', new MongoServer("127.0.0.1", 27017, {}));
 app.config.file({ file: path.join(__dirname, 'config', 'config.json') });
 
-app.use(flatiron.plugins.http);
+app.use(flatiron.plugins.http,
+        { before : [connect.static("public")] });
 
 routes.match('/', 'index.html');
-routes.match('/chat', 'chat.html');
 
 app.start(3000);
 

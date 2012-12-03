@@ -13,7 +13,8 @@ app.config.file({ file: path.join(__dirname, 'config', 'config.json') });
 app.use(flatiron.plugins.http,
         { before : [connect.static("public")] });
 
-routes.match('/', 'index.html');
+routes.match('/', 'index.html', 'text/html');
+routes.match('/app', 'app.css', 'text/css');
 
 app.start(3000);
 

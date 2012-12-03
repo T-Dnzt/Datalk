@@ -1,18 +1,42 @@
 <!DOCTYPE html>
 <html lang="fr">
     <head>
+        <link rel="stylesheet" href="/app" type="text/css">
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
+    </head>
+
+    <body>
+        <div id="login">
+          <h1 class="center">Datalk</h1>
+            <form id="connect_form">
+              <label for="username">Username : </label>
+              <input type="text" id="username" name="username">
+              <button type="submit" id="connect">Connect</button>
+            </form>
+            <div id="auth-fail"></div>
+        </div>
+
+        <div id="chat">
+            <ul id="messages"></ul>
+            <ul id="users"></ul>
+            <form id="message-form">
+              <input id="message-input" />
+            </form>
+        </div>
+
         <script>
           $(document).ready(function(){
 
             var socket = io.connect('http://localhost');
             socket.on('incorrect', function () {
-              $('#user').html("You have to enter a username.");
+              $('#auth-fail').html("Please, enter your name.");
             });
 
             socket.on('correct', function(nickname){
-              $('#user').html("User " + nickname + " logged.");
+              $('#login').hide();
+              $('#chat').show();
+              $('#message-input').focus();
             });
 
             $('#connect').click(function(e) {
@@ -20,17 +44,11 @@
               var nickname = $("#username").val();
               socket.emit('login', nickname);
             });
+
+            $('#message-form').submit(function(e) {
+              e.preventDefault();
+            });
           })
         </script>
-    </head>
-
-    <body>
-        <h1>Datalk</h1>
-          <form id="connect_form">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username">
-            <button type="submit" id="connect">Connect</button>
-          </form>
-          <div id="user"></div>
     </body>
 </html>

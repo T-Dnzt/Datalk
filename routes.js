@@ -2,7 +2,7 @@ var flatiron = require('flatiron'),
     app = flatiron.app,
     fs = require('fs');
 
-var match = function(url, filename) {
+var match = function(url, filename, mime) {
   app.router.get(url, function () {
     var self = this;
       fs.readFile(filename, function(err, data) {
@@ -11,7 +11,7 @@ var match = function(url, filename) {
         self.res.end("404 - Page Not Found");
         return;
       }
-      self.res.writeHead(200, {'Content-Type': 'text/html'});
+      self.res.writeHead(200, {'Content-Type': mime});
       self.res.end(data);
    });
   });

@@ -9,7 +9,7 @@
     <body>
         <div id="login">
           <h1 class="center">Datalk</h1>
-            <form id="connect_form">
+            <form id="connect-form">
               <label for="username">Username : </label>
               <input type="text" id="username" name="username">
               <button type="submit" id="connect">Connect</button>
@@ -27,28 +27,29 @@
 
         <script>
           $(document).ready(function(){
-
             var socket = io.connect('http://localhost');
-            socket.on('incorrect', function () {
-              $('#auth-fail').html("Please, enter your name.");
-            });
+             $('#username').focus();
 
-            socket.on('correct', function(nickname){
-              $('#login').hide();
-              $('#chat').show();
-              $('#message-input').focus();
-            });
-
-            $('#connect').click(function(e) {
+             $('#connect').click(function(e) {
               e.preventDefault();
               var nickname = $("#username").val();
-              socket.emit('login', nickname);
+
+              if(nickname) {
+                socket.emit('login', nickname, function(success) {
+                  $('#login').hide();
+                  $('#chat').show();
+                  $('#message-input').focus();
+                });
+              } else {
+                $('#auth-fail').html("Please, enter your name.");
+              }
             });
 
             $('#message-form').submit(function(e) {
               e.preventDefault();
             });
-          })
+           
+          });
         </script>
     </body>
 </html>

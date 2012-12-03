@@ -28,18 +28,10 @@ database.open(function(err, client) {
 });
 
 io.sockets.on('connection', function(socket) {
-    socket.on('login', function(nickname) {
-        if (nickname)
-        {
-            console.log("New chatter:"+nickname)
-            collectionUsers.findAndModify({nickname: nickname}, [['_id','asc']], {$set: {nickname: nickname}}, 
-            {upsert:true, new:true}, function(err, result) {
-              io.sockets.emit('correct', nickname);
-            });
-
-        } else {
-            console.log("No nickname");
-            io.sockets.emit('incorrect');
-        }
+    socket.on('login', function(nickname, callback) {
+        console.log("New chatter:"+nickname)
+        collectionUsers.findAndModify({nickname: nickname}, [['_id','asc']], {$set: {nickname: nickname}}, 
+                                      {upsert:true, new:true}, function(err, result) {});
+        callback(true);
     });
 });

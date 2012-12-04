@@ -27,6 +27,7 @@ var talk = [];
 io.sockets.on('connection', function(socket) {
 
     socket.on('login', function(nickname, callback) {
+        socket.nickname = nickname;
         users.push(nickname);
         socket.broadcast.emit("new-user", nickname, users);
         callback(true, messages, users);
@@ -35,6 +36,14 @@ io.sockets.on('connection', function(socket) {
     socket.on('send-message', function(message) {
         messages.push(message);
         io.sockets.emit("new-message", message);
+    });
+
+    socket.on('disconnect', function() {
+        if(socket.nickname)
+        {
+            users.splice(users.indexOf(socket.nickname), 1);
+            io.sockets.emit("user-logged-out", socket.nickname, users.length);
+        }
     });
 
 });

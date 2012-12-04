@@ -15,7 +15,7 @@
               <input type="text" id="username" name="username">
               <button type="submit" id="connect">Connect</button>
             </form>
-            <div id="auth-fail"></div>
+            <div id="auth-fail">Please, enter a nickname.</div>
         </div>
 
         <div id="chat">
@@ -35,7 +35,11 @@
         </script>
 
         <script id="datalkUserTmpl" type="text/x-jquery-tmpl">
-            <li class="datalk-user">${nickname}</li>
+            <li id="user-${nickname}">${nickname}</li>
+        </script>
+
+        <script id="systemMessageTmpl" type="text/x-jquery-tmpl">
+            <li class="system-message">${message}</li>
         </script>
 
         <script>
@@ -47,19 +51,20 @@
                 e.preventDefault();
                 var nickname = $("#username").val();
 
-                if(nickname) 
-                {
+                if(nickname) {
                   socket.emit('login', nickname, function(success, messages, users) {
+
+                    //View
                     $('#login').hide();
                     $('#chat').show();
                     $('#users-count').html(users.length);
 
                     $.each(messages, function(i, msg) { $('#datalkMessageTmpl').tmpl({author: msg.author, message: msg.content}).appendTo("#messages")});
-
                     $.each(users, function(i, nick) { $('#datalkUserTmpl').tmpl({nickname: nick}).appendTo("#users-list") });
+
                     $('#message-input').focus();
 
-
+                    //Send message
                     $('#message-form').submit(function(e) {
                       e.preventDefault();
                       var message = $("#message-input").val();
@@ -71,32 +76,35 @@
                       }
                     });
 
+                    //New message to display
                     socket.on('new-message', function(message) {
                       $('#datalkMessageTmpl').tmpl({author: message.author, message: message.content}).appendTo("#messages");
 
                       $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
                     });
 
-                    
-                     socket.on("new-user", function(nickname, users) {
+                    //New user logged in
+                    socket.on("new-user", function(nickname, users) {
                       $("#users-count").html(users.length);
                       $('#users-list').append('<li>'+ nickname +'</li>');
                       var message = nickname + " joined.";
-
-                     });
-
                     });
+
+                    socket.on("user-logged-out", function(nickname, usersCount) {
+                      $("#users-count").html(usersCount);
+                      $("#user-" + nickname).remove();
+                      var message = nickname + " has left the channel.";
+                      $("#systemMessageTmpl").tmpl({message: message}).appendTo("#messages");
+                      $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
+                    });
+
+                  });
                 } 
                 else 
                 {
-                  $('#auth-fail').html("Please, enter your name.");
+                  $('#auth-fail').show();
                 }
-            });
-
-
-
-
-           
+            }); 
           });
         </script>
     </body>

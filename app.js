@@ -20,18 +20,21 @@ app.start(3000);
 
 var io = require('socket.io').listen(app.server);
 
-var collectionUsers = null;
-database.open(function(err, client) {
-    client.collection('users', function(err, collection) {
-        collectionUsers = collection;
-    });
-});
+var users = [];
+var messages = [];
+var talk = [];
 
 io.sockets.on('connection', function(socket) {
+
     socket.on('login', function(nickname, callback) {
-        console.log("New chatter:"+nickname)
-        collectionUsers.findAndModify({nickname: nickname}, [['_id','asc']], {$set: {nickname: nickname}}, 
-                                      {upsert:true, new:true}, function(err, result) {});
-        callback(true);
+        users.push(nickname);
+        socket.broadcast.emit("new-user", nickname, users);
+        callback(true, messages, users);
     });
+
+    socket.on('send-message', function(message) {
+        messages.push(message);
+        io.sockets.emit("new-message", message);
+    });
+
 });

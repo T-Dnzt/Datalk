@@ -3,6 +3,7 @@
     <head>
         <link rel="stylesheet" href="/app" type="text/css">
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
     </head>
 
@@ -19,11 +20,23 @@
 
         <div id="chat">
             <ul id="messages"></ul>
-            <ul id="users"></ul>
+            <div id="users">
+              Number of users : <span id="users-count">0</span>
+              <ul id="users-list">
+              </ul>
+            </div>
             <form id="message-form">
               <input id="message-input" />
             </form>
         </div>
+
+        <script id="datalkMessageTmpl" type="text/x-jquery-tmpl">
+            <li class="datalk-message"><strong>${author}</strong> : ${message}</li>
+        </script>
+
+        <script id="datalkUserTmpl" type="text/x-jquery-tmpl">
+            <li class="datalk-user">${nickname}</li>
+        </script>
 
         <script>
           $(document).ready(function(){
@@ -31,23 +44,58 @@
              $('#username').focus();
 
              $('#connect').click(function(e) {
-              e.preventDefault();
-              var nickname = $("#username").val();
+                e.preventDefault();
+                var nickname = $("#username").val();
 
-              if(nickname) {
-                socket.emit('login', nickname, function(success) {
-                  $('#login').hide();
-                  $('#chat').show();
-                  $('#message-input').focus();
-                });
-              } else {
-                $('#auth-fail').html("Please, enter your name.");
-              }
+                if(nickname) 
+                {
+                  socket.emit('login', nickname, function(success, messages, users) {
+                    $('#login').hide();
+                    $('#chat').show();
+                    $('#users-count').html(users.length);
+
+                    $.each(messages, function(i, msg) { $('#datalkMessageTmpl').tmpl({author: msg.author, message: msg.content}).appendTo("#messages")});
+
+                    $.each(users, function(i, nick) { $('#datalkUserTmpl').tmpl({nickname: nick}).appendTo("#users-list") });
+                    $('#message-input').focus();
+
+
+                    $('#message-form').submit(function(e) {
+                      e.preventDefault();
+                      var message = $("#message-input").val();
+
+                      if(message)
+                      {
+                        socket.emit('send-message', {author: nickname, content: message});
+                        $("#message-input").val("");
+                      }
+                    });
+
+                    socket.on('new-message', function(message) {
+                      $('#datalkMessageTmpl').tmpl({author: message.author, message: message.content}).appendTo("#messages");
+
+                      $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
+                    });
+
+                    
+                     socket.on("new-user", function(nickname, users) {
+                      $("#users-count").html(users.length);
+                      $('#users-list').append('<li>'+ nickname +'</li>');
+                      var message = nickname + " joined.";
+
+                     });
+
+                    });
+                } 
+                else 
+                {
+                  $('#auth-fail').html("Please, enter your name.");
+                }
             });
 
-            $('#message-form').submit(function(e) {
-              e.preventDefault();
-            });
+
+
+
            
           });
         </script>

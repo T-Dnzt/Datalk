@@ -2,29 +2,31 @@ var flatiron = require('flatiron'),
     path = require('path'),
     app = flatiron.app,
     routes = require('./routes.js'),
+    dbAccess = require('./dbaccess.js'),
     mongodb = require('mongodb'),
     Database = mongodb.Db,
     MongoServer = mongodb.Server,
     connect = require('connect');
 
 var database = new Database('Datalk', new MongoServer("127.0.0.1", 27017, {}));
+
 app.config.file({ file: path.join(__dirname, 'config', 'config.json') });
+app.use(flatiron.plugins.http, { before : [connect.static("public")] });
 
-app.use(flatiron.plugins.http,
-        { before : [connect.static("public")] });
 
-routes.match('/', 'index.html', 'text/html');
-routes.match('/app', 'app.css', 'text/css');
-
-app.start(3000);
-
-var collectionTalks = null;
+//Routing & Collection access
+var collections = {};
 database.open(function(err, client) {
     client.collection('talks', function(err, collection) {
-        collectionTalks = collection;
+        collections.talks = collection;
+        routes.defineResources(collections.talks)
     });
 });
 
+routes.defineStaticPages();
+ 
+//Start the server and socket.io
+app.start(3000);
 var io = require('socket.io').listen(app.server);
 
 var users = [];
@@ -32,43 +34,9 @@ var messages = [];
 var talk = [];
 var timeOut = null;
 
-
-var saveTalk = function() {
-
-    console.log("Save Talk");
-    var firstAuthor = talk[0].author;
-    var messageID = "";
-    var permalink = "";
-
-    for(var i = 0; i < talk.length; i++)
-    {
-       message = talk[i];
-       if(message.content.split(' ').length > 5 && message.author == firstAuthor)
-       {
-            messageID = message.content;
-            break;
-       }
-    }
-
-    if(messageID.length > 0)
-    {
-        console.log(messageID);
-        var formattedMessageID = messageID.replace(/ /g,"-").replace(/\W/g, '-');
-        console.log(formattedMessageID);
-        permalink = formattedMessageID + "_" + firstAuthor;
-    }   
-    else
-    {
-        permalink = firstAuthor;
-    }
-
-    collectionTalks.insert({'first_author' : firstAuthor,
-                           'sentence_id' : messageID,
-                           'messages' : talk,
-                           'permalink' : permalink });
-
-    talk = [];
-};
+var startTalkSaving = function() {
+    dbAccess.saveTalk(talk, collections.talks);
+}
 
 io.sockets.on('connection', function(socket) {
 
@@ -79,16 +47,23 @@ io.sockets.on('connection', function(socket) {
         callback(true, messages, users);
     });
 
+    socket.on('gettalks', function(callback) {
+        console.log("fu");
+        collections.talks.find().toArray(function(err, results){
+            callback(true, results);
+        });
+    });
+
     socket.on('send-message', function(message) {
         messages.push(message);
         talk.push(message);
         io.sockets.emit("new-message", message);
         if(timeOut) {
             clearTimeout(timeOut);
-            timeOut = setTimeout(saveTalk, 300000);
+            timeOut = setTimeout(startTalkSaving, 5000);
         }
         else {
-            timeOut = setTimeout(saveTalk, 300000);
+            timeOut = setTimeout(startTalkSaving, 5000);
         }
     });
 

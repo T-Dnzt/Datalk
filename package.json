@@ -9,7 +9,8 @@
     "resourceful":"*",
     "mongodb" : "1.2.0",
     "socket.io": "0.9.0",
-    "connect": "*"
+    "connect": "*",
+    "plates": "*"
   },
   "devDependencies": {
     "api-easy": "0.3.2",

@@ -18,6 +18,11 @@
             <div id="auth-fail">Please, enter a nickname.</div>
         </div>
 
+        <div id="talks">
+          <h2>Last talks : </h2>
+          <ul id="talks-list"></ul>
+        </div>
+
         <div id="chat">
             <ul id="messages"></ul>
             <div id="users">
@@ -42,10 +47,25 @@
             <li class="system-message">${message}</li>
         </script>
 
+        <script id="talkTmpl" type="text/x-jquery-tmpl">
+            <li class="talk-${id}"><a href="/talk/${permalink}">${title}</a></li>
+        </script>
+
         <script>
           $(document).ready(function(){
             var socket = io.connect('http://localhost');
              $('#username').focus();
+
+             socket.emit('gettalks', function(success, talks) {
+              if(success) {
+                $.each(talks, function(i, talk) { 
+                  $('#talkTmpl').tmpl({id: talk._id, permalink: talk.permalink, title: talk.permalink}).appendTo("#talks-list");
+                });
+              }
+              else {
+
+              }
+             });
 
              $('#connect').click(function(e) {
                 e.preventDefault();
@@ -56,6 +76,7 @@
 
                     //View
                     $('#login').hide();
+                    $('#talks').hide();
                     $('#chat').show();
                     $('#users-count').html(users.length);
 

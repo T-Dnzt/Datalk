@@ -34,11 +34,13 @@ var messages = [];
 var talk = [];
 var timeOut = null;
 
-var startTalkSaving = function() {
-    dbAccess.saveTalk(talk, collections.talks);
-}
+
 
 io.sockets.on('connection', function(socket) {
+
+    var startTalkSaving = function() {
+        dbAccess.saveTalk(talk, collections.talks);
+    }      
 
     socket.on('login', function(nickname, callback) {
         socket.nickname = nickname;
@@ -58,13 +60,15 @@ io.sockets.on('connection', function(socket) {
         messages.push(message);
         talk.push(message);
         io.sockets.emit("new-message", message);
+
         if(timeOut) {
-            clearTimeout(timeOut);
-            timeOut = setTimeout(startTalkSaving, 5000);
+            clearTimeout(timeOut); 
         }
-        else {
-            timeOut = setTimeout(startTalkSaving, 5000);
-        }
+
+        timeOut = setTimeout(function() {
+            dbAccess.saveTalk(talk, collections.talks);
+            talk = [];
+        }, 5000);
     });
 
     socket.on('disconnect', function() {

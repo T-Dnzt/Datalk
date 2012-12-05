@@ -30,7 +30,7 @@ var saveTalk = function(talk, collectionTalks) {
                            'messages' : talk,
                            'permalink' : permalink });
 
-    talk = [];
+    return permalink;
 };
 
 exports.saveTalk = saveTalk;

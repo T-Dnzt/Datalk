@@ -16,15 +16,14 @@ var genTalkPage = function(talk, html) {
 var matchStatic = function(url, filename, mime) {
   app.router.get(url, function () {
     var self = this;
-      fs.readFile(filename, "utf-8", function(err, html) {
+      fs.readFile(filename, function(err, data) {
       if(err) {
         self.res.writeHead(404);
         self.res.end("404 - Page Not Found");
         return;
       }
-
       self.res.writeHead(200, {'Content-Type': mime});
-      self.res.end(html);
+      self.res.end(data);
    });
   });
 }

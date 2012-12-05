@@ -30,8 +30,15 @@ io.sockets.on('connection', function(socket) {
         }
 
         timeOut = setTimeout(function() {
-            Talk.save(talk, dbConnector);
+
+            var permalink = Talk.save(talk, dbConnector, function(permalink) {
+                var message = { author: "Server", 
+                               content: "A page has been created about this talk. You can find it here : /" + permalink };
+                io.sockets.emit("new-message", message);
+            });
+            
             talk = [];
+
         }, 5000);
     });
 

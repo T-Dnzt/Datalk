@@ -8,7 +8,7 @@ var findAll = function(dbConnector, callback) {
   });
 }
 
-var save = function(talk, dbConnector) {
+var save = function(talk, dbConnector, callback) {
     dbConnector.executeOnCollection(collectionName, function(collection) {
       console.log("Save new talk");
       var firstAuthor = talk[0].author;
@@ -39,8 +39,7 @@ var save = function(talk, dbConnector) {
                          'sentence_id' : messageID,
                          'messages' : talk,
                          'permalink' : permalink });
-
-      return permalink;    
+      callback(permalink);  
     });
 };
 

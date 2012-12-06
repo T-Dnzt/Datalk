@@ -26,6 +26,7 @@
         <div id="chat">
             <ul id="messages"></ul>
             <div id="users">
+              <h2 id="chatname"></h2>
               Number of users : <span id="users-count">0</span>
               <ul id="users-list">
               </ul>
@@ -72,13 +73,14 @@
                 var nickname = $("#username").val();
 
                 if(nickname) {
-                  socket.emit('login', nickname, function(success, messages, users) {
+                  socket.emit('login', nickname, function(success, messages, users, chatname) {
 
                     //View
                     $('#login').hide();
                     $('#talks').hide();
                     $('#chat').show();
                     $('#users-count').html(users.length);
+                    $('#chatname').html(chatname);
 
                     $.each(messages, function(i, msg) { $('#datalkMessageTmpl').tmpl({author: msg.author, message: msg.content}).appendTo("#messages")});
                     $.each(users, function(i, nick) { $('#datalkUserTmpl').tmpl({nickname: nick}).appendTo("#users-list") });
@@ -92,7 +94,7 @@
 
                       if(message)
                       {
-                        socket.emit('send-message', {author: nickname, content: message});
+                        socket.emit('send-message', {author: nickname, content: message}, $("#chatname").html());
                         $("#message-input").val("");
                       }
                     });
@@ -108,7 +110,7 @@
                     socket.on("new-user", function(nickname, users) {
                       $("#users-count").html(users.length);
                       $('#users-list').append('<li>'+ nickname +'</li>');
-                      var message = nickname + " joined.";
+                      $('#messages').append("<li>"+ nickname + " joined.</li>");
                     });
 
                     socket.on("user-logged-out", function(nickname, usersCount) {

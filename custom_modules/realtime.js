@@ -15,7 +15,7 @@ io.sockets.on('connection', function(socket) {
     });
 
     socket.on('gettalks', function(callback) {
-        Talk.findAll(dbConnector, function(results) {
+        Talk.findAll(dbConnector, {sort: {_id: -1}}, function(results) {
             callback(true, results);
         });
     });

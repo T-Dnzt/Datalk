@@ -4,26 +4,34 @@ var flatiron = require('flatiron'),
     plates = require('plates');
 
 
-var genTalkPage = function(talk, html) {
+var genTalkPage = function(talk, html, previousTalk, nextTalk) {
     var partialMessages = "";
     talk.messages.forEach(function(message) { 
        partialMessages += "<li><strong>" + message.author + "</strong> : " + message.content + "</li>";
     });
-    return plates.bind(html, {"messages-list" : partialMessages, "talk-name" : talk.permalink});
+
+    var nextTalkPermalink = "";
+    var previousTalkPermalink = "";
+    if(nextTalk) { nextTalkPermalink = nextTalk.permalink; }  
+    if(previousTalk) { previousTalkPermalink = previousTalk.permalink; }
+
+    return plates.bind(html, {"messages-list" : partialMessages, "talk-name" : talk.permalink,
+                              "previous-talk" : previousTalkPermalink, "next-talk" : nextTalkPermalink});
 }
 
 
 var matchStatic = function(url, filename, mime) {
   app.router.get(url, function () {
     var self = this;
-      fs.readFile(filename, function(err, data) {
+      fs.readFile(filename, "utf-8", function(err, html) {
       if(err) {
         self.res.writeHead(404);
         self.res.end("404 - Page Not Found");
         return;
       }
+
       self.res.writeHead(200, {'Content-Type': mime});
-      self.res.end(data);
+      self.res.end(html);
    });
   });
 }
@@ -45,8 +53,26 @@ var resources = function(name, collection, columnName, callback)
       collection.findOne(query, function(err, result) {
         if (result)
         {
-            self.res.writeHead(200, {'Content-Type': 'text/html'});
-            self.res.end(callback(result, data));
+          collection.find({}, {sort: {_id: -1}}).toArray(function(err, results) {
+
+              var previousTalk = null;
+              var nextTalk = null;
+
+              for(var i = 0; i < results.length; i++) {
+                console.log("new record");
+                console.log(results[i]._id.getTimestamp());
+                if(String(results[i]._id) == String(result._id)) {
+                  var previousTalk = results[i + 1];
+                  if(results[i + 1]) {
+                    var nextTalk = results[i - 1];
+                  }
+                  break;
+                } 
+              }
+
+              self.res.writeHead(200, {'Content-Type': 'text/html'});
+              self.res.end(callback(result, data, previousTalk, nextTalk));
+            });
         }
       }); 
    });

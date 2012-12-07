@@ -1,4 +1,4 @@
-var collectionName = "talks"; 
+var collectionName = "talks";
 
 var findAll = function(dbConnector, options, callback) {
   dbConnector.executeOnCollection(collectionName, function(collection) {
@@ -26,7 +26,7 @@ var save = function(talk, dbConnector, callback) {
       if(messageID.length == 0) {
          messageID = talk[0].content;
       }
-      
+
       var formattedMessageID = messageID.replace(/ /g,"-").replace(/\W/g, '-');
       permalink = formattedMessageID + "_" + firstAuthor;
 
@@ -34,7 +34,7 @@ var save = function(talk, dbConnector, callback) {
                          'sentence_id' : messageID,
                          'messages' : talk,
                          'permalink' : permalink });
-      callback(permalink);  
+      callback(permalink);
     });
 };
 

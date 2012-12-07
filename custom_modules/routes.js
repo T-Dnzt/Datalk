@@ -1,19 +1,19 @@
 var flatiron = require('flatiron'),
     app = flatiron.app,
-    fs = require('fs'), 
+    fs = require('fs'),
     plates = require('plates');
 
 
 var genTalkPage = function(talk, html, previousTalk, nextTalk) {
     var partialMessages = "";
-    talk.messages.forEach(function(message) { 
+    talk.messages.forEach(function(message) {
        partialMessages += "<li><strong>" + message.author + "</strong> : " + message.content + "</li>";
     });
 
     var nextTalkPermalink = "";
     var previousTalkPermalink = "";
-    if(nextTalk) { nextTalkPermalink = nextTalk.permalink; }  
-    if(previousTalk) { previousTalkPermalink = previousTalk.permalink; }
+    if(nextTalk) { nextTalkPermalink = "Next : <a href='/talk/"+nextTalk.permalink+"'>"+nextTalk.permalink+"</a>"; }
+    if(previousTalk) { previousTalkPermalink = "Previous : <a href='/talk/"+previousTalk.permalink+"'>"+previousTalk.permalink+"</a>"; }
 
     return plates.bind(html, {"messages-list" : partialMessages, "talk-name" : talk.permalink,
                               "previous-talk" : previousTalkPermalink, "next-talk" : nextTalkPermalink});
@@ -37,9 +37,9 @@ var matchStatic = function(url, filename, mime) {
 }
 
 
-var resources = function(name, collection, columnName, callback) 
+var resources = function(name, collection, columnName, callback)
 {
-  app.router.get('/'+ name +'/:id', function (id) {  
+  app.router.get('/'+ name +'/:id', function (id) {
       var self = this;
 
       fs.readFile("public/views/"+ name + ".html", 'utf-8', function(err, data) {
@@ -63,18 +63,18 @@ var resources = function(name, collection, columnName, callback)
                 console.log(results[i]._id.getTimestamp());
                 if(String(results[i]._id) == String(result._id)) {
                   var previousTalk = results[i + 1];
-                  if(results[i + 1]) {
+                  if(results[i - 1]) {
                     var nextTalk = results[i - 1];
                   }
                   break;
-                } 
+                }
               }
 
               self.res.writeHead(200, {'Content-Type': 'text/html'});
               self.res.end(callback(result, data, previousTalk, nextTalk));
             });
         }
-      }); 
+      });
    });
   });
 }

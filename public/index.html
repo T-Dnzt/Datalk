@@ -15,6 +15,7 @@
               <input type="text" id="username" name="username">
               <button type="submit" id="connect">Connect</button>
             </form>
+            <div id="existing-nickname">This nickname is already in use. Please pick an other.</div>
             <div id="auth-fail">Please, enter a nickname.</div>
         </div>
 
@@ -75,52 +76,55 @@
                 if(nickname) {
                   socket.emit('login', nickname, function(success, messages, users, chatname) {
 
-                    //View
-                    $('#login').hide();
-                    $('#talks').hide();
-                    $('#chat').show();
-                    $('#users-count').html(users.length);
-                    $('#chatname').html(chatname);
+                    if(success) {
+                        //View
+                        $('#login').hide();
+                        $('#talks').hide();
+                        $('#chat').show();
+                        $('#users-count').html(users.length);
+                        $('#chatname').html(chatname);
 
-                    $.each(messages, function(i, msg) { $('#datalkMessageTmpl').tmpl({author: msg.author, message: msg.content}).appendTo("#messages")});
-                    $.each(users, function(i, nick) { $('#datalkUserTmpl').tmpl({nickname: nick}).appendTo("#users-list") });
+                        $.each(messages, function(i, msg) { $('#datalkMessageTmpl').tmpl({author: msg.author, message: msg.content}).appendTo("#messages")});
+                        $.each(users, function(i, nick) { $('#datalkUserTmpl').tmpl({nickname: nick}).appendTo("#users-list") });
 
-                    $('#message-input').focus();
+                        $('#message-input').focus();
 
-                    //Send message
-                    $('#message-form').submit(function(e) {
-                      e.preventDefault();
-                      var message = $("#message-input").val();
+                        //Send message
+                        $('#message-form').submit(function(e) {
+                          e.preventDefault();
+                          var message = $("#message-input").val();
 
-                      if(message)
-                      {
-                        socket.emit('send-message', {author: nickname, content: message}, $("#chatname").html());
-                        $("#message-input").val("");
+                          if(message)
+                          {
+                            socket.emit('send-message', {author: nickname, content: message}, $("#chatname").html());
+                            $("#message-input").val("");
+                          }
+                        });
+
+                        //New message to display
+                        socket.on('new-message', function(message) {
+                          $('#datalkMessageTmpl').tmpl({author: message.author, message: message.content}).appendTo("#messages");
+
+                          $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
+                        });
+
+                        //New user logged in
+                        socket.on("new-user", function(nickname, users) {
+                          $("#users-count").html(users.length);
+                          $('#users-list').append('<li>'+ nickname +'</li>');
+                          $('#messages').append("<li>"+ nickname + " joined.</li>");
+                        });
+
+                        socket.on("user-logged-out", function(nickname, usersCount) {
+                          $("#users-count").html(usersCount);
+                          $("#user-" + nickname).remove();
+                          var message = nickname + " has left the channel.";
+                          $("#systemMessageTmpl").tmpl({message: message}).appendTo("#messages");
+                          $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
+                        });
+                      } else {
+                        $('#existing-nickname').show();
                       }
-                    });
-
-                    //New message to display
-                    socket.on('new-message', function(message) {
-                      $('#datalkMessageTmpl').tmpl({author: message.author, message: message.content}).appendTo("#messages");
-
-                      $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
-                    });
-
-                    //New user logged in
-                    socket.on("new-user", function(nickname, users) {
-                      $("#users-count").html(users.length);
-                      $('#users-list').append('<li>'+ nickname +'</li>');
-                      $('#messages').append("<li>"+ nickname + " joined.</li>");
-                    });
-
-                    socket.on("user-logged-out", function(nickname, usersCount) {
-                      $("#users-count").html(usersCount);
-                      $("#user-" + nickname).remove();
-                      var message = nickname + " has left the channel.";
-                      $("#systemMessageTmpl").tmpl({message: message}).appendTo("#messages");
-                      $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
-                    });
-
                   });
                 } 
                 else 

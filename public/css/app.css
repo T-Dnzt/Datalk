@@ -22,7 +22,7 @@ body { font-family: sans-serif; }
   text-align: center;
 }
 
-#auth-fail {
+#auth-fail, #existing-nickname {
   color: red;
   text-align: center;
   margin-top: 4%;

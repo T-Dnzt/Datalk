@@ -8,10 +8,16 @@ var setup = function(io, dbConnector, Talk) {
 io.sockets.on('connection', function(socket) {
 
     socket.on('login', function(nickname, callback) {
-        socket.nickname = nickname;
-        users.push(nickname);
-        socket.broadcast.emit("new-user", nickname, users);
-        callback(true, messages, users);
+        if(users.indexOf(nickname) == -1) {
+            console.log("NOT FOUND");
+            socket.nickname = nickname;
+            users.push(nickname);
+            socket.broadcast.emit("new-user", nickname, users);
+            callback(true, messages, users);
+        } else {
+            console.log("FOUND");
+            callback(false);    
+        }   
     });
 
     socket.on('gettalks', function(callback) {

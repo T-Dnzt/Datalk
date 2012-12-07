@@ -9,15 +9,13 @@ io.sockets.on('connection', function(socket) {
 
     socket.on('login', function(nickname, callback) {
         if(users.indexOf(nickname) == -1) {
-            console.log("NOT FOUND");
             socket.nickname = nickname;
             users.push(nickname);
             socket.broadcast.emit("new-user", nickname, users);
             callback(true, messages, users);
         } else {
-            console.log("FOUND");
-            callback(false);    
-        }   
+            callback(false);
+        }
     });
 
     socket.on('gettalks', function(callback) {
@@ -32,17 +30,17 @@ io.sockets.on('connection', function(socket) {
         io.sockets.emit("new-message", message);
 
         if(timeOut) {
-            clearTimeout(timeOut); 
+            clearTimeout(timeOut);
         }
 
         timeOut = setTimeout(function() {
 
             var permalink = Talk.save(talk, dbConnector, function(permalink) {
-                var message = { author: "Server", 
+                var message = { author: "Server",
                                content: "A page has been created about this talk. You can find it here : /" + permalink };
                 io.sockets.emit("new-message", message);
             });
-            
+
             talk = [];
 
         }, 5000);

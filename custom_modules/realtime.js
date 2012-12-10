@@ -36,9 +36,7 @@ io.sockets.on('connection', function(socket) {
         timeOut = setTimeout(function() {
 
             var permalink = Talk.save(talk, dbConnector, function(permalink) {
-                var message = { author: "Server",
-                               content: "A page has been created about this talk. You can find it here : /" + permalink };
-                io.sockets.emit("new-message", message);
+                io.sockets.emit("new-talk", permalink);
             });
 
             talk = [];

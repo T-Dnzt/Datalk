@@ -11,6 +11,10 @@ body { font-family: sans-serif; }
   top: 40%;
 }
 
+#messages {
+  list-style-type: none; 
+}
+
 #talks {
   width: 300px;
   height: 500px;

@@ -53,6 +53,13 @@
             <li class="talk-${id}"><a href="/talk/${permalink}">${title}</a></li>
         </script>
 
+         <script id="newTalkMessageTmpl" type="text/x-jquery-tmpl">
+            <li class="datalk-message">
+              A new talk has been created about this topic. You can find it here : 
+              <a href="/talk/${permalink}">${permalink}</a>
+            </li>
+        </script>
+
         <script>
           $(document).ready(function(){
             var socket = io.connect('http://localhost');
@@ -106,6 +113,10 @@
                           $('#datalkMessageTmpl').tmpl({author: message.author, message: message.content}).appendTo("#messages");
 
                           $("#messages").scrollTop($("#messages").prop("scrollHeight") - $("#messages").height());
+                        });
+
+                        socket.on('new-talk', function(permalink) {
+                          $('#newTalkMessageTmpl').tmpl({permalink: permalink}).appendTo("#messages");             
                         });
 
                         //New user logged in

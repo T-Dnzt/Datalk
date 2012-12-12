@@ -19,5 +19,6 @@ dbConnector.executeOnCollection(Talk.collectionName, routes.defineResources);
 app.start(3000);
 
 var io = require('socket.io').listen(app.server);
+io.set('log level', 1);
 socketIO.setup(io, dbConnector, Talk);
     

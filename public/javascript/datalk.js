@@ -86,6 +86,7 @@ $(document).ready(function(){
   socket.on("left-chan", function(chanName) {
     $('#tabs').tabs('remove', "#"+chanName, "#"+chanName);
     $('#tabs').remove("#"+chanName);
+    $('#tabs .ui-tabs-panel:not(.ui-tabs-hide)').find('.message-input').focus();
   });
 
   socket.on("reset-chat", function() {
@@ -93,6 +94,7 @@ $(document).ready(function(){
     $('#talks').show();
     $('#tabs').hide();
     $('#username').val("");
+    $('#username').focus();
   });
 
   socket.on('show-help', function(chanName, helpMessages) {

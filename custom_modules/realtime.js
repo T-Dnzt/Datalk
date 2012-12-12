@@ -41,7 +41,7 @@ io.sockets.on('connection', function(socket) {
 
             talk = [];
 
-        }, 5000);
+        }, 300000);
     });
 
     socket.on('disconnect', function() {

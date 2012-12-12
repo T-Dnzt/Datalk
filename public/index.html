@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
     <head>
-        <link rel="stylesheet" href="/app" type="text/css">
+        <link rel="stylesheet" href="css/app.css" type="text/css">
         <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
         <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
@@ -46,6 +46,12 @@
                 <ul class="users-list">
                 </ul>
               </div>
+              <div class="channels">
+                <h3>Available channels :</h3>
+                <span class="chat-commands">Commands : /join /quit with chan name.</span>
+                <ul class="channels-list">  
+                </ul>
+              </div>
               <form class="message-form">
                 <input class="message-input" />
               </form>
@@ -56,8 +62,8 @@
             <li class="datalk-message"><strong>${author}</strong> : ${message}</li>
         </script>
 
-        <script id="datalkUserTmpl" type="text/x-jquery-tmpl">
-            <li id="user-${nickname}">${nickname}</li>
+        <script id="datalkLiTmpl" type="text/x-jquery-tmpl">
+            <li class="li-${name}">${name}</li>
         </script>
 
         <script id="systemMessageTmpl" type="text/x-jquery-tmpl">
@@ -90,48 +96,67 @@
               }
              });
 
+            var displayChannels = function(channels) {
+              var channelLists = $('.channels-list');
+              channelLists.html("");
+              $.each(channels, function(i, channel) {
+                $('#datalkLiTmpl').tmpl({name: channel}).appendTo(channelLists)
+              });
+            }    
 
 
              $('#connect').click(function(e) {
                 e.preventDefault();
                 var nickname = $("#username").val();
 
-                var genChannel = function(messages, users, chatname) {
-
-                          $('#datalkChatTmpl').tmpl({chan : chatname}).appendTo('#tabs');
-                          $('#tabs').tabs('add', "#"+chatname, "#"+chatname);
-                          $( "#tabs" ).tabs( 'select', $( "#tabs" ).tabs('length') - 1);
-
-                          $('#'+chatname+' .chatname').html("Channel #" + chatname);
-                          $('#'+chatname+' .users-count').html(users.length);
-                          $.each(messages, function(i, msg) { $('#datalkMessageTmpl').tmpl({author: msg.author, message: msg.content}).appendTo("#"+chatname+" .messages")});
-                          $.each(users, function(i, nick) { $('#datalkUserTmpl').tmpl({nickname: nick}).appendTo('#'+chatname+' .users-list') });
-
-                          $('#'+chatname+' .message-input').focus();
-
-                          $('#'+chatname+' .message-form').submit(function(e) {
-                            e.preventDefault();
-                            var message = $('#'+chatname+' .message-input').val();
-                            if(message)
-                            {
-                              socket.emit('send-message', {author: nickname, content: message}, chatname);
-                              $('#'+chatname+' .message-input').val("");
-                            }
-                          });
-                }
-
+                
                 if(nickname) {
-                  socket.emit('login', nickname, function(success, messages, users, chatname) {
+
+                  var createChannel = function(messages, users, chatname, channels) {
+
+                      $('#datalkChatTmpl').tmpl({chan : chatname}).appendTo('#tabs');
+                      $('#tabs').tabs('add', "#"+chatname, "#"+chatname);
+                      $( "#tabs" ).tabs( 'select', $( "#tabs" ).tabs('length') - 1);
+
+                      var chatDiv = $('#'+chatname);
+                      chatDiv.find('.chatname').html("Channel #" + chatname);
+                      chatDiv.find('.users-count').html(users.length);
+
+                      $.each(messages, function(i, msg) { $('#datalkMessageTmpl').tmpl({author: msg.author, message: msg.content}).appendTo(chatDiv.find('.messages'))});
+
+                      $.each(users, function(i, nick) { 
+                        $('#datalkLiTmpl').tmpl({name: nick}).appendTo(chatDiv.find(' .users-list')) });
+
+                      displayChannels(channels);
+
+
+                      chatDiv.find('.message-input').focus();
+
+                      chatDiv.find('.message-form').submit(function(e) {
+                        e.preventDefault();
+                        var message = chatDiv.find('.message-input').val();
+                        if(message)
+                        {
+                          socket.emit('send-message', {author: nickname, content: message}, chatname);
+                          chatDiv.find('.message-input').val("");
+                        }
+                      });
+                    }
+
+
+
+                  socket.emit('login', nickname, function(success, messages, users, chatname, channels) {
 
                     if(success) {
+
                         $('#login').hide();
                         $('#talks').hide();
                         $('#tabs').show();
 
-                        genChannel(messages, users, chatname);
+                        createChannel(messages, users, chatname, channels);
 
-                        socket.on("join-channel", function(messages, users, chatname) {
-                          genChannel(messages, users, chatname);
+                        socket.on("join-channel", function(messages, users, chatname, channels) {
+                          createChannel(messages, users, chatname, channels);
                         });
 
                         socket.on("left-channel", function(chatname) {
@@ -152,15 +177,23 @@
 
                           //New user logged in
                           socket.on("new-user", function(nickname, users, chatname) {
-
                             $('#'+chatname+' .users-count').html(users.length);
-                            $('#'+chatname+' .users-list').append('<li>'+ nickname +'</li>');
+                            $('#datalkLiTmpl').tmpl({name: nickname}).appendTo('#'+chatname+' .users-list');
                             $('#'+chatname+' .messages').append("<li>"+ nickname + " joined.</li>");
+                          });
+
+                          socket.on("new-chan", function(channels) {
+                            displayChannels(channels);
+                            //$('#datalkLiTmpl').tmpl({name: channel}).appendTo(' .channels-list');
+                          });
+
+                          socket.on("delete-chan", function(channels) {
+                            displayChannels(channels);
                           });
 
                           socket.on("user-left-chan", function(nickname, usersCount, chatname) {
                             $('#'+chatname+' .users-count').html(usersCount);
-                            $('#'+chatname+' .user-' + nickname).remove();
+                            $('#'+chatname+' .li-' + nickname).remove();
                             var message = nickname + " has left the channel.";
                             $("#systemMessageTmpl").tmpl({message: message}).appendTo('#'+chatname+' .messages');
                             $('#'+chatname+' .messages').scrollTop($('#'+chatname+' .messages').prop("scrollHeight") - $('#'+chatname+' .messages').height());

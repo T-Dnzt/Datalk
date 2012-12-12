@@ -11,7 +11,6 @@ var findAll = function(dbConnector, options, callback) {
 var save = function(talk, dbConnector, callback) {
     dbConnector.executeOnCollection(collectionName, function(collection) {
 
-      console.log("Save new talk");
       var firstAuthor = talk[0].author;
       var messageID = "";
       var permalink = "";

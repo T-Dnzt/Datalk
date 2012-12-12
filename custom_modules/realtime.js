@@ -33,32 +33,43 @@ ChatsManager.prototype.systemCommand = function(command, socket, sockets) {
     var args = command.content.split(" ");
     var manager = this;
 
-    switch(args[0]) {
-        case "/join":
-            manager.joinChannel(args[1], command.author, socket, sockets);
-            break;
-        case "/quit": 
-            manager.leaveChannel(args[1], command.author, socket, sockets);
-            break;
+    if(args[1] != undefined && args[1] != "main") {
+        switch(args[0]) {
+            case "/join":
+                manager.joinChannel(args[1], command.author, socket, sockets);
+                break;
+            case "/quit": 
+                manager.leaveChannel(args[1], command.author, socket, sockets);
+                break;
+            default:
+                break;
+        }
     }
 }
 
 ChatsManager.prototype.joinChannel = function(chatname, nickname, socket, sockets) {
     var chat = this.getChat(chatname);
     chat.users.push(nickname);
-    socket.emit("join-channel", chat.messages, chat.users, chat.name);
-    sockets.in(chat.name).emit("new-user", nickname, chat.users, chatname);
+    sockets.emit("new-chan", Object.keys(this.chats));
+    socket.emit("join-channel", chat.messages, chat.users, chat.name, Object.keys(this.chats));
+    sockets.in(chat.name).emit("new-user", nickname, chat.users, chat.name);
     socket.join(chat.name);
 }
  
 ChatsManager.prototype.leaveChannel = function(chatname, nickname, socket, sockets) {
-
+    var manager = this;
     this.doForEachChat(function(chat){
         if (chat.name == chatname && chat.users.indexOf(nickname) != -1) {
             chat.users.splice(chat.users.indexOf(nickname), 1);
+
             socket.emit("left-channel", chat.name);
             socket.leave(chat.name);
             sockets.in(chat.name).emit("user-left-chan", nickname, chat.users.length, chat.name);
+
+            if(chat.users.length == 0) {
+                delete manager.chats[chatname];
+                sockets.emit("delete-chan", Object.keys(manager.chats));
+            }   
         }
     })
    
@@ -83,12 +94,12 @@ var setup = function(io, dbConnector, Talk) {
     })
 
     socket.on('login', function(nickname, callback) {
-        var chat = chatsManager.getChat("Default");
+        var chat = chatsManager.getChat("main");
 
         if(chat.users.indexOf(nickname) == -1) {
             socket.nickname = nickname;
             chatsManager.joinChannel(chat.name, nickname, socket, io.sockets)
-            callback(true, chat.messages, chat.users, chat.name);
+            callback(true, chat.messages, chat.users, chat.name, Object.keys(chatsManager.chats));
         } else {
             callback(false);
         }

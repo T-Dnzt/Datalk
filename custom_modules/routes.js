@@ -59,6 +59,8 @@ var resources = function(name, collection, columnName, callback)
               var nextTalk = null;
 
               for(var i = 0; i < results.length; i++) {
+                console.log("new record");
+                console.log(results[i]._id.getTimestamp());
                 if(String(results[i]._id) == String(result._id)) {
                   var previousTalk = results[i + 1];
                   if(results[i - 1]) {
@@ -82,8 +84,19 @@ var defineResources = function(collectionTalks) {
 }
 
 var defineStaticPages = function() {
+
   matchStatic('/', 'public/index.html', 'text/html');
-  matchStatic('/app', 'public/css/app.css', 'text/css');
+/*
+  var globalDir = 'public';
+  var assetsDir = ['css', 'javascript'];
+
+  assetsDir.forEach(function(dir) {
+    fs.readdir(globalDir+'/'+dir, function(err, list) {
+      list.forEach(function (file) {
+        matchStatic(file, globalDir+'/'+dir+'/'+file, 'text/'+dir);
+      });
+    });
+  });*/
 }
 
 

@@ -46,18 +46,21 @@ body { font-family: sans-serif; }
   margin-left: 10px;
   float: left;
   list-style-type: none; 
+  border-right: 1px solid black;
 }
 
-.users { 
+.users, .channels  { 
   margin-top: 0;
   padding-left: 2%;
   width: 20%; 
-  height: 90%; 
+  height: 45%; 
   float: right; 
-  border-left: 1px solid black;
   overflow-y: scroll;
 }
 
+.chat-commands {
+  font-size: 10px;
+}
 
 .message-form { 
 
@@ -73,6 +76,7 @@ body { font-family: sans-serif; }
   border-top: 1px black solid;
   font-size: 80%;
 }
+
 
 #home-page-link {
   font-size: 20px;

@@ -59,7 +59,7 @@ ChanManager.prototype.systemCommand = function(message, chanName) {
     if(commands[0] == "/logout") {
         manager.disconnect(this.socket);
     } else if (commands[0] == "/help") {
-
+        manager.showHelp();
     } else if(commands[0] == "/join" && commands[1] != undefined && commands[1] != "Datalk") {
         manager.joinChan(commands[1], message.author);
     } else if(commands[0] == "/quit" && commands[1] != "Datalk" && chanName != "Datalk") {
@@ -73,6 +73,16 @@ ChanManager.prototype.systemCommand = function(message, chanName) {
     }
 }
 
+ChanManager.prototype.showHelp = function() {
+    this.socket.emit("show-help", this.currentChan.name, 
+                    ["Welcome to Datalk !", 
+                     "Here are the available commands :", 
+                     "/join 'chan name', join or create a chan - alias (/j)",
+                     "/quit 'chan name', quit the active chan if no name is given - alias (/q)",
+                     "/logout, disconnect from the chat - alias(/l)",
+                     "/help, provide information about the chat commands"]);
+
+}
 
 ChanManager.prototype.joinChan = function(chanName) {
     this.currentChan = this.getChan(chanName);

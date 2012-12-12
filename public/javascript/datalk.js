@@ -95,6 +95,12 @@ $(document).ready(function(){
     $('#username').val("");
   });
 
+  socket.on('show-help', function(chanName, helpMessages) {
+    $.each(helpMessages, function(i, message) {
+      $('#systemMessageTmpl').tmpl({message: message}).appendTo('#'+chanName+' .messages');
+    });
+  });
+
   socket.on('new-message', function(chanName, message) {
     $('#datalkMessageTmpl').tmpl({author: message.author, message: message.content}).appendTo('#'+chanName+' .messages');
     chanDiv(chanName, '.messages').scrollTop(chanDiv(chanName, '.messages').prop("scrollHeight") - chanDiv(chanName, '.messages').height());

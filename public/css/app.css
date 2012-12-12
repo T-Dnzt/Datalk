@@ -15,7 +15,7 @@ body { font-family: sans-serif; }
   width: 300px;
   height: 500px;
   border: 1px solid black;
-  overflow-y: scroll; 
+  overflow-y: scroll;
 }
 
 .center {
@@ -38,23 +38,27 @@ body { font-family: sans-serif; }
   height: 100%;
 }
 
-.messages { 
+.messages {
   width: 72%;
   height: 90%;
-  margin-top: 1%; 
-  overflow-y: scroll; 
+  margin-top: 1%;
+  overflow-y: scroll;
   margin-left: 10px;
   float: left;
-  list-style-type: none; 
+  list-style-type: none;
   border-right: 1px solid black;
 }
 
-.users, .channels  { 
+.messages .system-message {
+  color: red;
+}
+
+.users, .channels  {
   margin-top: 0;
   padding-left: 2%;
-  width: 20%; 
-  height: 45%; 
-  float: right; 
+  width: 20%;
+  height: 45%;
+  float: right;
   overflow-y: scroll;
 }
 
@@ -62,15 +66,15 @@ body { font-family: sans-serif; }
   font-size: 10px;
 }
 
-.message-form { 
+.message-form {
 
 }
 
-.message-input { 
-  width: 95%; 
-  height: 100%; 
+.message-input {
+  width: 95%;
+  height: 100%;
   margin-left: 1%;
-  padding: 1% 1em; 
+  padding: 1% 1em;
   outline: none;
   border: none;
   border-top: 1px black solid;

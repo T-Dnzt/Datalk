@@ -30,10 +30,10 @@ ChanManager.prototype.sendMessage = function(dbConnector, chanName, message, soc
     this.socket = socket;
 
     if(message.content[0] == "/") {
-        this.systemCommand(message, this.socket, this.sockets);
+        this.systemCommand(message, this.currentChan.name);
     } else {
-        this.currentChan.messages.push(message);
 
+        this.currentChan.messages.push(message);
         this.currentChan.talkMessages.push(message);
 
         this.sockets.in(this.currentChan.name).emit("new-message", this.currentChan.name, message);
@@ -52,18 +52,22 @@ ChanManager.prototype.sendMessage = function(dbConnector, chanName, message, soc
     }
 }
 
-ChanManager.prototype.systemCommand = function(command) {
-    var args = command.content.split(" ");
+ChanManager.prototype.systemCommand = function(message, chanName) {
+    var commands = message.content.split(" ");
     var manager = this;
 
-    if(args[0] == "/logout") {
-        manager.disconnect(socket, sockets);
-    } else if (args[0] == "/help") {
+    if(commands[0] == "/logout") {
+        manager.disconnect(this.socket);
+    } else if (commands[0] == "/help") {
 
-    } else if(args[0] == "/join" && args[1] != undefined && args[1] != "main") {
-        manager.joinChan(args[1], command.author);
-    } else if(args[0] == "/quit" && args[1] != "main") {
-        manager.quitChan(args[1], command.author);
+    } else if(commands[0] == "/join" && commands[1] != undefined && commands[1] != "Datalk") {
+        manager.joinChan(commands[1], message.author);
+    } else if(commands[0] == "/quit" && commands[1] != "Datalk") {
+        if(commands[1] == undefined) {
+            manager.quitChan(chanName, message.author);
+        } else {
+            manager.quitChan(commands[1], message.author);
+        }
     } else {
 
     }
@@ -85,9 +89,10 @@ ChanManager.prototype.joinChan = function(chanName) {
 
  
 ChanManager.prototype.quitChan = function(chanName, nickname) {
+    var manager = this;
     this.doForEachChan(function(chan){
         if (chan.name == chanName && chan.users.indexOf(nickname) != -1) {
-           manager.removeFromChan(chan, nickname);
+            manager.removeFromChan(chan, nickname);
         }
     })  
 }
@@ -99,8 +104,8 @@ ChanManager.prototype.disconnect = function(socket) {
     if(this.socket.nickname)
     {
         this.doForEachChan(function(chan) {
-            if (chan.users.indexOf(this.socket.nickname) != -1) {
-               manager.removeFromChannel(chan, this.socket.nickname);
+            if (chan.users.indexOf(manager.socket.nickname) != -1) {
+               manager.removeFromChan(chan, manager.socket.nickname);
             }
         });
         this.socket.nickname = null;
@@ -114,17 +119,17 @@ ChanManager.prototype.removeFromChan = function(chan, nickname) {
 
     chan.users.splice(chan.users.indexOf(nickname), 1);
 
-    socket.emit("left-chan", chan.name);
-    socket.leave(chan.name);
-    sockets.in(chan.name).emit("user-left-chan", chan.name, nickname, chan.users.length);
+    this.socket.emit("left-chan", chan.name);
+    this.socket.leave(chan.name);
+    this.sockets.in(chan.name).emit("user-left-chan", chan.name, nickname, chan.users.length);
 
     if(chan.users.length == 0) {
         delete manager.channels[chan.name];
-        sockets.emit("display-channels", Object.keys(manager.channels));
+        this.sockets.emit("display-channels", Object.keys(manager.channels));
     }   
 }
 
-/********************/
+
 ChanManager.prototype.getChan = function(chanName) {
     if(this.channels[chanName]) {
         return this.channels[chanName];
@@ -136,9 +141,9 @@ ChanManager.prototype.getChan = function(chanName) {
 
 ChanManager.prototype.doForEachChan = function(callback) {
     var manager = this;
-    for(var chan in manager.channels) {
-        if(manager.channels.hasOwnProperty(chan.name)) { 
-            callback(manager.chats[chan.name]);
+    for(var chanName in manager.channels) {
+        if(manager.channels.hasOwnProperty(chanName)) { 
+            callback(manager.channels[chanName]);
         }
     }
 }

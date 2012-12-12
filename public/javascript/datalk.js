@@ -92,6 +92,7 @@ $(document).ready(function(){
     $('#login').show();
     $('#talks').show();
     $('#tabs').hide();
+    $('#username').val("");
   });
 
   socket.on('new-message', function(chanName, message) {

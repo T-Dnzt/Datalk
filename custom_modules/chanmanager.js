@@ -62,7 +62,7 @@ ChanManager.prototype.systemCommand = function(message, chanName) {
 
     } else if(commands[0] == "/join" && commands[1] != undefined && commands[1] != "Datalk") {
         manager.joinChan(commands[1], message.author);
-    } else if(commands[0] == "/quit" && commands[1] != "Datalk") {
+    } else if(commands[0] == "/quit" && commands[1] != "Datalk" && chanName != "Datalk") {
         if(commands[1] == undefined) {
             manager.quitChan(chanName, message.author);
         } else {

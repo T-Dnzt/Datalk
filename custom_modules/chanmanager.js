@@ -84,17 +84,19 @@ ChanManager.prototype.showHelp = function() {
 
 }
 
-ChanManager.prototype.joinChan = function(chanName) {
+ChanManager.prototype.joinChan = function(chanName, nickname) {
     this.currentChan = this.getChan(chanName);
 
-    this.currentChan.users.push(this.socket.nickname);
-    this.sockets.emit("display-channels", Object.keys(this.channels));
-    this.sockets.in(this.currentChan.name).emit("new-user", this.currentChan.name, this.socket.nickname, this.currentChan.users.length);
-    this.socket.join(this.currentChan.name);
-    this.socket.emit("join-chan", {messages : this.currentChan.messages, users: this.currentChan.users,
-                                   chanName: this.currentChan.name, channels: Object.keys(this.channels),
-                                   nickname: this.socket.nickname});
-    //IS SPARTA
+    if(this.currentChan.users.indexOf(nickname) == -1) {
+        this.currentChan.users.push(this.socket.nickname);
+        this.sockets.emit("display-channels", Object.keys(this.channels));
+        this.sockets.in(this.currentChan.name).emit("new-user", this.currentChan.name, this.socket.nickname, this.currentChan.users.length);
+        this.socket.join(this.currentChan.name);
+        this.socket.emit("join-chan", {messages : this.currentChan.messages, users: this.currentChan.users,
+                                       chanName: this.currentChan.name, channels: Object.keys(this.channels),
+                                       nickname: this.socket.nickname});
+        //IS SPARTA
+    }
 }
 
  

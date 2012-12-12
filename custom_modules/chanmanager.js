@@ -58,11 +58,11 @@ ChanManager.prototype.systemCommand = function(message, chanName) {
 
     if(commands[0] == "/logout") {
         manager.disconnect(this.socket);
-    } else if (commands[0] == "/help") {
+    } else if (commands[0] == "/help" || commands[0] == "/h") {
         manager.showHelp();
-    } else if(commands[0] == "/join" && commands[1] != undefined && commands[1] != "Datalk") {
+    } else if(commands[0] == "/join" || commands[0] == "/j" && commands[1] != undefined && commands[1] != "Datalk") {
         manager.joinChan(commands[1], message.author);
-    } else if(commands[0] == "/quit" && commands[1] != "Datalk" && chanName != "Datalk") {
+    } else if(commands[0] == "/quit" || commands[0] == "/q" && commands[1] != "Datalk" && chanName != "Datalk") {
         if(commands[1] == undefined) {
             manager.quitChan(chanName, message.author);
         } else {
@@ -74,9 +74,9 @@ ChanManager.prototype.systemCommand = function(message, chanName) {
 }
 
 ChanManager.prototype.showHelp = function() {
-    this.socket.emit("show-help", this.currentChan.name, 
-                    ["Welcome to Datalk !", 
-                     "Here are the available commands :", 
+    this.socket.emit("show-help", this.currentChan.name,
+                    ["Welcome to Datalk !",
+                     "Here are the available commands :",
                      "/join 'chan name', join or create a chan - alias (/j)",
                      "/quit 'chan name', quit the active chan if no name is given - alias (/q)",
                      "/logout, disconnect from the chat - alias(/l)",
@@ -99,14 +99,14 @@ ChanManager.prototype.joinChan = function(chanName, nickname) {
     }
 }
 
- 
+
 ChanManager.prototype.quitChan = function(chanName, nickname) {
     var manager = this;
     this.doForEachChan(function(chan){
         if (chan.name == chanName && chan.users.indexOf(nickname) != -1) {
             manager.removeFromChan(chan, nickname);
         }
-    })  
+    })
 }
 
 
@@ -138,7 +138,7 @@ ChanManager.prototype.removeFromChan = function(chan, nickname) {
     if(chan.users.length == 0) {
         delete manager.channels[chan.name];
         this.sockets.emit("display-channels", Object.keys(manager.channels));
-    }   
+    }
 }
 
 
@@ -154,7 +154,7 @@ ChanManager.prototype.getChan = function(chanName) {
 ChanManager.prototype.doForEachChan = function(callback) {
     var manager = this;
     for(var chanName in manager.channels) {
-        if(manager.channels.hasOwnProperty(chanName)) { 
+        if(manager.channels.hasOwnProperty(chanName)) {
             callback(manager.channels[chanName]);
         }
     }

@@ -1,15 +1,13 @@
+var modelName = "Talk";
 var collectionName = "talks";
 
-var findAll = function(dbConnector, options, callback) {
-  dbConnector.executeOnCollection(collectionName, function(collection) {
+var findAll = function(collection, options, callback) {
     collection.find({}, options).toArray(function(err, results){
       callback(results);
     });
-  });
 }
 
-var save = function(talk, dbConnector, callback) {
-    dbConnector.executeOnCollection(collectionName, function(collection) {
+var save = function(collection, talk, callback) {
 
       var firstAuthor = talk[0].author;
       var messageID = "";
@@ -35,10 +33,10 @@ var save = function(talk, dbConnector, callback) {
                          'messages' : talk,
                          'permalink' : permalink });
       callback(permalink);
-    });
 };
 
 
 exports.save = save;
 exports.findAll = findAll;
 exports.collectionName = collectionName;
+exports.modelName = modelName;

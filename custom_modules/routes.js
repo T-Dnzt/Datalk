@@ -59,8 +59,6 @@ var resources = function(name, collection, columnName, callback)
               var nextTalk = null;
 
               for(var i = 0; i < results.length; i++) {
-                console.log("new record");
-                console.log(results[i]._id.getTimestamp());
                 if(String(results[i]._id) == String(result._id)) {
                   var previousTalk = results[i + 1];
                   if(results[i - 1]) {

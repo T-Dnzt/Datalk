@@ -38,7 +38,10 @@ a:active {text-decoration:underline;}
 #talks-display {
   height: 85%;
   overflow-y: auto;
+}
 
+#talks-list li {
+  margin-top: 3%;
 }
 
 .center {

@@ -82,7 +82,7 @@ $(document).ready(function(){
   socket.emit('get-talks', function(success, talks) {
     if(success) {
       $.each(talks, function(i, talk) { 
-        $('#talkTmpl').tmpl({id: talk._id, permalink: talk.permalink, title: talk.permalink}).appendTo("#talks-list");
+        $('#talkTmpl').tmpl({id: talk._id, permalink: talk.permalink, title: talk.sentence_id}).appendTo("#talks-list");
       });
     }
   });

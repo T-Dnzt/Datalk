@@ -15,8 +15,10 @@
         <div id="login">
           <h1 class="center">Datalk</h1>
             <form id="connect-form">
-              <label for="username">Username : </label>
-              <input type="text" id="username" name="username">
+              <div class="center">
+                <label for="username">Username : </label>
+                <input type="text" id="username" name="username">
+              </div>
               <button type="submit" id="connect">Connect</button>
             </form>
             <div id="existing-nickname">This nickname is already in use. Please pick an other.</div>
@@ -24,8 +26,10 @@
         </div>
 
         <div id="talks">
-          <h2>Last talks : </h2>
-          <ul id="talks-list"></ul>
+          <h2 class="center">Last talks : </h2>
+          <div id="talks-display">
+            <ol id="talks-list"></ol>
+          </div>
         </div>
 
         <div id="tabs">

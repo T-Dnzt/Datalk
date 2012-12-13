@@ -35,7 +35,7 @@ TwitterConnector.prototype.search = function(tag, callback) {
     responseData.push(chunk);
   });
 
-  res.on('end', function() {  
+  res.on('end', function() {
     if (responseData.length > 0) {
         connector.tweets = JSON.parse(responseData.join('')).results;
         if(connector.tweets.length > 0) {

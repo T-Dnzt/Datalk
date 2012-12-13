@@ -7,7 +7,7 @@ var setup = function(io, dbConnector) {
     io.sockets.on('connection', function(socket) {
 
         socket.on('login', function(nickname, callback) {
-            chanManager.loginUser(nickname, callback, socket);
+            chanManager.loginUser(nickname, socket, callback);
         });
 
         socket.on('send-message', function(chanName, message) {

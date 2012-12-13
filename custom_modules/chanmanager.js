@@ -12,75 +12,72 @@ function Chan(name) {
 function ChanManager(sockets, dbConnector) {
     this.channels = [];
     this.sockets = sockets;
-    this.socket = null;
-    this.currentChan = null;
+    this.dbConnector = dbConnector;
 }
 
 //Public
-ChanManager.prototype.loginUser = function(nickname, callback, socket) {
-    this.currentChan = this.getChan("Datalk");
-    this.socket = socket;
+ChanManager.prototype.loginUser = function(nickname, socket, callback) {
+    var chan = this.getChan("Datalk");
 
-    if(this.currentChan.users.indexOf(nickname) == -1) {
-        this.socket.nickname = nickname;
+    if(chan.users.indexOf(nickname) == -1) {
+        socket.nickname = nickname;
         callback(true);
-        this.joinChan(this.currentChan.name, nickname, this.socket, this.sockets)
+        this.joinChan(chan.name, socket, nickname)
     } else {
         callback(false);
     }
 }
 
 ChanManager.prototype.computeMessage = function(chanName, message, socket) {
-    this.currentChan = this.getChan(chanName);
-    this.socket = socket;
+    var currentChan = this.getChan(chanName);
 
     if(message.content[0] == "/") {
-        this.systemCommand(message, currentChan.name, dbConnector);
+        this.systemCommand(currentChan, socket, message);
     } else {
-       this.sendMessage(message);
+       this.sendMessage(currentChan, message);
     }
 }
 
 
 ChanManager.prototype.disconnect = function(socket) {
     var manager = this;
-    this.socket = socket;
-    if(this.socket.nickname)
+
+    if(socket.nickname)
     {
         this.doForEachChan(function(chan) {
-            if (chan.users.indexOf(manager.socket.nickname) != -1) {
-               manager.removeFromChan(chan, manager.socket.nickname);
+            if (chan.users.indexOf(socket.nickname) != -1) {
+                manager.removeFromChan(chan, socket, socket.nickname);
             }
         });
-        this.socket.nickname = null;
-        this.socket.emit("reset-chat");
+        socket.nickname = null;
+        socket.emit("reset-chat");
     }
 }
 
 //Private
-ChanManager.prototype.sendMessage = function(message) {
+ChanManager.prototype.sendMessage = function(chan, message) {
 
-    this.currentChan.messages.push(message);
-    this.currentChan.talkMessages.push(message);
+    chan.messages.push(message);
+    chan.talkMessages.push(message);
 
-    this.sockets.in(this.currentChan.name).emit("new-message", this.currentChan.name, message);
+    this.sockets.in(chan.name).emit("new-message", chan.name, message);
 
-    if(this.currentChan.timeOut) {
-        clearTimeout(this.currentChan.timeOut);
+    if(chan.timeOut) {
+        clearTimeout(chan.timeOut);
     }
 
     var manager = this;
-    this.currentChan.timeOut = setTimeout(function() {
-        var talk = {talkMessages: manager.currentChan.talkMessages, chanName: manager.currentChan.name};
+    chan.timeOut = setTimeout(function() {
+        var talk = {talkMessages: chan.talkMessages, chanName: chan.name};
         manager.dbConnector.save("Talk", talk, function(permalink) {
-            manager.sockets.in(manager.currentChan.name).emit("new-talk", currentChan.name, permalink);
+            manager.sockets.in(chan.name).emit("new-talk", chan.name, permalink);
         });
 
-        currentChan.talkMessages = [];
+        chan.talkMessages = [];
     }, 300000);
 }
 
-ChanManager.prototype.systemCommand = function(message) {
+ChanManager.prototype.systemCommand = function(chan, socket, message) {
     var commands = message.content.split(" ");
     var manager = this;
 
@@ -89,18 +86,18 @@ ChanManager.prototype.systemCommand = function(message) {
     }
 
     if(commands[0] == "/logout" || commands[0] == "/l") {
-        this.disconnect(this.socket);
+        this.disconnect(socket);
     } else if (commands[0] == "/help" || commands[0] == "/h") {
         this.showHelp();
     } else if(commands[0] == "/join" || commands[0] == "/j" && commands[1] != undefined && commands[1] != "Datalk") {
-        this.joinChan(commands[1], message.author);
-    } else if(commands[0] == "/quit" || commands[0] == "/q" && commands[1] != "Datalk" && this.currentChan.name != "Datalk") {
+        this.joinChan(commands[1], socket, message.author);
+    } else if(commands[0] == "/quit" || commands[0] == "/q" && commands[1] != "Datalk" && chan.name != "Datalk") {
         if(commands[1] == undefined) {
-            this.quitChan(chanName, message.author);
+            this.quitChan(chan.name, socket, message.author);
         } else {
-            this.quitChan(commands[1], message.author);
+            this.quitChan(commands[1], socket, message.author);
         }
-    } 
+    }
 }
 
 ChanManager.prototype.showHelp = function() {
@@ -114,55 +111,55 @@ ChanManager.prototype.showHelp = function() {
 
 }
 
-ChanManager.prototype.joinChan = function(chanName, nickname) {
-    this.currentChan = this.getChan(chanName);
+ChanManager.prototype.joinChan = function(chanName, socket, nickname) {
+    var chan = this.getChan(chanName);
     var manager = this;
 
-    if(this.currentChan.twitter == undefined) {
-       this.currentChan.twitter = new twitter.TwitterConnector();
+    if(chan.twitter == undefined) {
+        chan.twitter = new twitter.TwitterConnector();
     }
 
-    if(this.currentChan.users.indexOf(nickname) == -1) {
+    if(chan.users.indexOf(nickname) == -1) {
 
-        this.currentChan.twitter.setup(chanName, function(message) {
+        chan.twitter.setup(chan.name, function(message) {
             if(message) {
-                manager.sendMessage(message);
+                manager.sendMessage(chan, message);
             }
         });
 
-        this.currentChan.users.push(this.socket.nickname);
+        chan.users.push(socket.nickname);
         this.sockets.emit("display-channels", Object.keys(this.channels));
-        this.sockets.in(this.currentChan.name).emit("new-user", this.currentChan.name, this.socket.nickname, this.currentChan.users.length);
-        this.socket.join(this.currentChan.name);
-        this.socket.emit("join-chan", {messages : this.currentChan.messages, users: this.currentChan.users,
-                                       chanName: this.currentChan.name, channels: Object.keys(this.channels),
-                                       nickname: this.socket.nickname});
+        this.sockets.in(chan.name).emit("new-user", chan.name, socket.nickname, chan.users.length);
+        socket.join(chan.name);
+        socket.emit("join-chan", {messages : chan.messages, users: chan.users,
+                                  chanName: chan.name, channels: Object.keys(this.channels),
+                                  nickname: socket.nickname});
         //IS SPARTA
     }
 }
 
 
-ChanManager.prototype.quitChan = function(chanName, nickname) {
+ChanManager.prototype.quitChan = function(chanName, socket, nickname) {
     var manager = this;
     this.doForEachChan(function(chan){
         if (chan.name == chanName && chan.users.indexOf(nickname) != -1) {
-            manager.removeFromChan(chan, nickname);
+            manager.removeFromChan(chan, socket, nickname);
         }
     })
 }
 
 
-ChanManager.prototype.removeFromChan = function(chan, nickname) {
+ChanManager.prototype.removeFromChan = function(chan, socket, nickname) {
     var manager = this;
 
     chan.users.splice(chan.users.indexOf(nickname), 1);
 
-    this.socket.emit("left-chan", chan.name);
-    this.socket.leave(chan.name);
+    socket.emit("left-chan", chan.name);
+    socket.leave(chan.name);
     this.sockets.in(chan.name).emit("user-left-chan", chan.name, nickname, chan.users.length);
 
     if(chan.users.length == 0) {
-        clearInterval(manager.currentChan.twitter.interv);
+        clearInterval(chan.twitter.interv);
         delete manager.channels[chan.name];
         this.sockets.emit("display-channels", Object.keys(manager.channels));
     }

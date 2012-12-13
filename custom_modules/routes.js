@@ -15,7 +15,8 @@ var genTalkPage = function(talk, html, previousTalk, nextTalk) {
     if(nextTalk) { nextTalkPermalink = "Next : <a href='/talk/"+nextTalk.permalink+"'>"+nextTalk.permalink+"</a>"; }
     if(previousTalk) { previousTalkPermalink = "Previous : <a href='/talk/"+previousTalk.permalink+"'>"+previousTalk.permalink+"</a>"; }
 
-    return plates.bind(html, {"messages-list" : partialMessages, "talk-name" : talk.permalink,
+    var subtitle = "Author : "+talk.first_author+" - Chan : #"+talk.chan_name;
+    return plates.bind(html, {"messages-list" : partialMessages, "talk-name" : talk.sentence_id, "subtitle" : subtitle,
                               "previous-talk" : previousTalkPermalink, "next-talk" : nextTalkPermalink});
 }
 

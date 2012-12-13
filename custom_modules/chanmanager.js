@@ -26,28 +26,30 @@ ChanManager.prototype.loginUser = function(nickname, callback, socket) {
 }
 
 ChanManager.prototype.sendMessage = function(dbConnector, chanName, message, socket) {
-    this.currentChan = this.getChan(chanName);
+    var currentChan = this.getChan(chanName);
     this.socket = socket;
+    var manager = this;
 
     if(message.content[0] == "/") {
-        this.systemCommand(message, this.currentChan.name);
+        this.systemCommand(message, currentChan.name);
     } else {
 
-        this.currentChan.messages.push(message);
-        this.currentChan.talkMessages.push(message);
+        currentChan.messages.push(message);
+        currentChan.talkMessages.push(message);
 
-        this.sockets.in(this.currentChan.name).emit("new-message", this.currentChan.name, message);
+        this.sockets.in(currentChan.name).emit("new-message", currentChan.name, message);
 
-        if(this.currentChan.timeOut) {
-            clearTimeout(this.currentChan.timeOut);
+        if(currentChan.timeOut) {
+            clearTimeout(currentChan.timeOut);
         }
 
-        this.currentChan.timeOut = setTimeout(function() {
-            dbConnector.save("Talk", this.currentChan.talkMessages, function(permalink) {
-                this.sockets.in(this.currentChan.name).emit("new-talk", this.currentChan.name, permalink);
+        currentChan.timeOut = setTimeout(function() {
+            var talk = {talkMessages: currentChan.talkMessages, chanName: currentChan.name};
+            dbConnector.save("Talk", talk, function(permalink) {
+                manager.sockets.in(currentChan.name).emit("new-talk", currentChan.name, permalink);
             });
 
-            this.currentChan.talkMessages = [];
+            currentChan.talkMessages = [];
         }, 300000);
     }
 }

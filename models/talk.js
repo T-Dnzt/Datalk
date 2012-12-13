@@ -9,12 +9,12 @@ var findAll = function(collection, options, callback) {
 
 var save = function(collection, talk, callback) {
 
-      var firstAuthor = talk[0].author;
+      var firstAuthor = talk.talkMessages[0].author;
       var messageID = "";
       var permalink = "";
 
-      for(var i = 0; i < talk.length; i++) {
-         message = talk[i];
+      for(var i = 0; i < talk.talkMessages.length; i++) {
+         message = talk.talkMessages[i];
          if(message.content.split(' ').length > 5 && message.author == firstAuthor) {
               messageID = message.content;
               break;
@@ -22,17 +22,29 @@ var save = function(collection, talk, callback) {
       }
 
       if(messageID.length == 0) {
-         messageID = talk[0].content;
+         messageID = talk.talkMessages[0].content;
       }
 
-      var formattedMessageID = messageID.replace(/ /g,"-").replace(/\W/g, '-');
-      permalink = formattedMessageID + "_" + firstAuthor;
+      collection.findOne({sentence_id: messageID}, function(err, result){
+        var formattedMessageID = messageID.replace(/ /g,"-").replace(/\W/g, '-');
 
-      collection.insert({'first_author' : firstAuthor,
-                         'sentence_id' : messageID,
-                         'messages' : talk,
-                         'permalink' : permalink });
-      callback(permalink);
+        if(result) {
+          var randomNumber = Math.floor(Math.random()*10001);
+          permalink = formattedMessageID + "_" + firstAuthor + "_" + randomNumber;
+        } else {
+          permalink = formattedMessageID + "_" + firstAuthor;
+        }
+        
+
+        collection.insert({'first_author' : firstAuthor,
+                           'sentence_id' : messageID,
+                           'messages' : talk.talkMessages,
+                           'permalink' : permalink,
+                           'chan_name' : talk.chanName });
+        callback(permalink);
+      });
+      
+
 };
 
 

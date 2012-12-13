@@ -23,8 +23,9 @@ DBConnector.prototype.addModel = function(modelName, model) {
 }
 
 DBConnector.prototype.save = function(modelName, data, callback) {
+  var connector = this;
   this.executeOnModel(modelName, function(collection) {
-    this.models[modelName].save(collection, data, callback);
+    connector.models[modelName].save(collection, data, callback);
   });
 }
 

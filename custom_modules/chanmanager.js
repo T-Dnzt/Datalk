@@ -9,13 +9,15 @@ function Chan(name) {
   this.twitter = null;
 }
 
+//The ChanManager class represents the engine of the chat. 
+//It will manage the channels based on event received in realtime.js.
 function ChanManager(sockets, dbConnector) {
     this.channels = [];
     this.sockets = sockets;
     this.dbConnector = dbConnector;
 }
 
-//Public
+
 ChanManager.prototype.loginUser = function(nickname, socket, callback) {
     var chan = this.getChan("Datalk");
 
@@ -54,7 +56,6 @@ ChanManager.prototype.disconnect = function(socket) {
     }
 }
 
-//Private
 ChanManager.prototype.sendMessage = function(chan, message) {
 
     chan.messages.push(message);
@@ -67,6 +68,7 @@ ChanManager.prototype.sendMessage = function(chan, message) {
     }
 
     var manager = this;
+
     chan.timeOut = setTimeout(function() {
         var talk = {talkMessages: chan.talkMessages, chanName: chan.name};
         manager.dbConnector.save("Talk", talk, function(permalink) {
@@ -77,6 +79,7 @@ ChanManager.prototype.sendMessage = function(chan, message) {
     }, 300000);
 }
 
+//Handles commands typed by users
 ChanManager.prototype.systemCommand = function(chan, socket, message) {
     var commands = message.content.split(" ");
     var manager = this;
@@ -148,7 +151,7 @@ ChanManager.prototype.quitChan = function(chanName, socket, nickname) {
     })
 }
 
-
+//Remove a user from a specified chan
 ChanManager.prototype.removeFromChan = function(chan, socket, nickname) {
     var manager = this;
 

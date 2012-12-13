@@ -48,6 +48,7 @@ $(document).ready(function(){
     });
   }  
 
+   //Add a chan in the chat
    var createChan = function(data) {
 
       $('#datalkChatTmpl').tmpl({chan : data.chanName}).appendTo('#tabs');

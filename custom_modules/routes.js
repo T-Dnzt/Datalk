@@ -3,6 +3,8 @@ var flatiron = require('flatiron'),
     fs = require('fs'),
     plates = require('plates');
 
+//This module handles everything which is related to page routing.
+//Unfortunately, it also manage some templating.
 
 var genTalkPage = function(talk, html, previousTalk, nextTalk) {
     var partialMessages = "";
@@ -36,7 +38,6 @@ var matchStatic = function(url, filename, mime) {
    });
   });
 }
-
 
 var resources = function(name, collection, columnName, callback)
 {
@@ -83,19 +84,7 @@ var defineResources = function(collectionTalks) {
 }
 
 var defineStaticPages = function() {
-
   matchStatic('/', 'public/index.html', 'text/html');
-/*
-  var globalDir = 'public';
-  var assetsDir = ['css', 'javascript'];
-
-  assetsDir.forEach(function(dir) {
-    fs.readdir(globalDir+'/'+dir, function(err, list) {
-      list.forEach(function (file) {
-        matchStatic(file, globalDir+'/'+dir+'/'+file, 'text/'+dir);
-      });
-    });
-  });*/
 }
 
 

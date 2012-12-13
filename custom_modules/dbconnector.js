@@ -2,6 +2,8 @@ var mongodb = require('mongodb'),
     Database = mongodb.Db,
     MongoServer = mongodb.Server;
 
+//This class manages access to the models.
+//It includes an array contening all the models.
 function DBConnector(dbName, address) {
   this.db = new Database(dbName, new MongoServer(address, 27017, {auto_reconnect: true}));
   this.db.open(function(){});
@@ -29,7 +31,6 @@ DBConnector.prototype.save = function(modelName, data, callback) {
   });
 }
 
-//{sort: {_id: -1}, limit: 15}
 DBConnector.prototype.findAll = function(modelName, options, callback) {
   var connector = this;
   this.executeOnModel(modelName, function(collection) {

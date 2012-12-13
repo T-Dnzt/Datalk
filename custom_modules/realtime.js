@@ -1,5 +1,6 @@
 var chanManagerModule = require('./chanmanager.js');
 
+
 var setup = function(io, dbConnector) {
 
     var chanManager = new chanManagerModule.ChanManager(io.sockets, dbConnector);
@@ -23,7 +24,7 @@ var setup = function(io, dbConnector) {
         })
 
         socket.on('get-talks', function(callback) {
-            dbConnector.findAll("Talk", {sort: {_id: -1}, limit: 15}, function(results) {
+            dbConnector.findAll("Talk", {sort: {_id: -1}, limit: 10}, function(results) {
                 callback(true, results);
             });
         });

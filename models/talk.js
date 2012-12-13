@@ -1,6 +1,8 @@
 var modelName = "Talk";
 var collectionName = "talks";
 
+//This module manage direct access to the talks collection.
+
 var findAll = function(collection, options, callback) {
     collection.find({}, options).toArray(function(err, results){
       callback(results);

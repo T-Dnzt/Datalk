@@ -58,6 +58,8 @@ ChanManager.prototype.systemCommand = function(message, chanName) {
     var commands = message.content.split(" ");
     var manager = this;
 
+    commands[1] = commands[1].replace(/#/g, '' );
+
     if(commands[0] == "/logout" || commands[0] == "/l") {
         manager.disconnect(this.socket);
     } else if (commands[0] == "/help" || commands[0] == "/h") {

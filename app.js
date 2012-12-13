@@ -15,7 +15,7 @@ app.use(flatiron.plugins.http, { before : [connect.static("public")] });
 
 routes.defineStaticPages();
 
-//Generate models and push them in an array. 
+//Generate models and push them in an array.
 //Some refactoring would be required in order to manage other model than Talk.
 var modelsDir = 'models';
 fs.readdir(modelsDir, function(err, list) {
@@ -32,4 +32,3 @@ app.start(3000);
 var io = require('socket.io').listen(app.server);
 io.set('log level', 1);
 socketIO.setup(io, dbConnector);
-    

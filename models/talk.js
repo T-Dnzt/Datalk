@@ -1,7 +1,7 @@
 var modelName = "Talk";
 var collectionName = "talks";
 
-//This module manage direct access to the talks collection.
+//This module manages direct access to the talks collection.
 
 var findAll = function(collection, options, callback) {
     collection.find({}, options).toArray(function(err, results){
@@ -36,18 +36,18 @@ var save = function(collection, talk, callback) {
         } else {
           permalink = formattedMessageID + "_" + firstAuthor;
         }
-        
+
 
         collection.insert({'first_author' : firstAuthor,
                            'sentence_id' : messageID,
                            'messages' : talk.talkMessages,
                            'permalink' : permalink,
-                           'chan_name' : talk.chanName }, 
+                           'chan_name' : talk.chanName },
                            function(err, results) {
                                callback(results[0].permalink);
                            });
       });
-      
+
 
 };
 

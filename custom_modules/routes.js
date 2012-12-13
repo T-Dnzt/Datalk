@@ -4,7 +4,7 @@ var flatiron = require('flatiron'),
     plates = require('plates');
 
 //This module handles everything which is related to page routing.
-//Unfortunately, it also manage some templating.
+//Unfortunately, it also manages some templating.
 
 var genTalkPage = function(talk, html, previousTalk, nextTalk) {
     var partialMessages = "";

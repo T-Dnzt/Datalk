@@ -9,8 +9,8 @@ function Chan(name) {
   this.twitter = null;
 }
 
-//The ChanManager class represents the engine of the chat. 
-//It will manage the channels based on event received in realtime.js.
+//The ChanManager class represents the engine of the chat.
+//It will manage the channels based on events received in realtime.js.
 function ChanManager(sockets, dbConnector) {
     this.channels = [];
     this.sockets = sockets;

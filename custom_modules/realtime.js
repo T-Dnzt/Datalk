@@ -2,7 +2,7 @@ var chanManagerModule = require('./chanmanager.js');
 
 var setup = function(io, dbConnector) {
 
-    var chanManager = new chanManagerModule.ChanManager(io.sockets);
+    var chanManager = new chanManagerModule.ChanManager(io.sockets, dbConnector);
 
     io.sockets.on('connection', function(socket) {
 
@@ -11,7 +11,7 @@ var setup = function(io, dbConnector) {
         });
 
         socket.on('send-message', function(chanName, message) {
-           chanManager.sendMessage(dbConnector, chanName, message, socket)
+           chanManager.computeMessage(chanName, message, socket)
         });
 
         socket.on('disconnect', function() {

@@ -10,6 +10,18 @@ function TwitterConnector() {
   this.interv = null;
 }
 
+TwitterConnector.prototype.setup = function(tag, callback) {
+  var connector = this;
+
+    if(this.init == false) {
+        this.init = true;
+        this.interv = setInterval(function(){
+            connector.search(tag, callback);
+        }, 180000);
+    }
+}
+
+
 TwitterConnector.prototype.search = function(tag, callback) {
 
   var connector = this;

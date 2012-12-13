@@ -40,8 +40,10 @@ var save = function(collection, talk, callback) {
                            'sentence_id' : messageID,
                            'messages' : talk.talkMessages,
                            'permalink' : permalink,
-                           'chan_name' : talk.chanName });
-        callback(permalink);
+                           'chan_name' : talk.chanName }, 
+                           function(err, results) {
+                               callback(results[0].permalink);
+                           });
       });
       
 

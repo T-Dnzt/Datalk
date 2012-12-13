@@ -7,7 +7,7 @@ a {
 }
 
 a:hover {
-  color: #FF0000;
+  color: #929292;
   text-decoration: none;
 }
 
@@ -25,6 +25,7 @@ a:active {text-decoration:underline;}
 #talks {
   width: 300px;
   height: 500px;
+  overflow-y: auto;
 }
 
 #talks  h2 {
@@ -65,6 +66,11 @@ a:active {text-decoration:underline;}
   float: left;
   list-style-type: none;
   border-right: 1px solid black;
+}
+
+#tabs .ui-widget-content a {
+  color: #929292;
+  text-decoration: underline;
 }
 
 .messages .system-message {

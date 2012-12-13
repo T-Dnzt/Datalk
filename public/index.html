@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
     <head>
+        <title>Datalk</title>
         <link rel="stylesheet" href="css/app.css" type="text/css">
         <link rel="stylesheet" href="css/jquery-ui.css" />
         <script src="javascript/jquery.min.js"></script>
@@ -29,13 +30,13 @@
 
         <div id="tabs">
           <ul id="tabs-list">
- 
+
           </ul>
 
         </div>
 
         <script id="datalkTabsListTmpl" type="text/x-jquery-tmpl">
-          <li><a href="#${chan}">#${chan}</a></li>
+          <li><a href="#${chan}">#${chanTitle}</a></li>
         </script>
 
         <script id="datalkChatTmpl" type="text/x-jquery-tmpl">
@@ -50,7 +51,7 @@
               <div class="channels">
                 <h3>Available channels :</h3>
                 <span class="chat-commands">Commands : /join /quit with chan name.</span>
-                <ul class="channels-list">  
+                <ul class="channels-list">
                 </ul>
               </div>
               <form class="message-form">
@@ -77,7 +78,7 @@
 
          <script id="newTalkMessageTmpl" type="text/x-jquery-tmpl">
             <li class="datalk-message">
-              A new talk has been created about this topic. You can find it here : 
+              A new talk has been created about this topic. You can find it here :
               <a href="/talk/${permalink}">${permalink}</a>
             </li>
         </script>

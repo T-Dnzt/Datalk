@@ -24,11 +24,19 @@ $(document).ready(function(){
       }   
   });
 
+   var escape = function(str) {
+     if(str) {
+         return str.replace(/([ #;&,.+*~\':"!^$[\]()=>|\/@])/g,'\\$1')
+      } else {
+         return str;
+      }
+   }
+
    var chanDiv = function(chanName, subElement) {
       if(subElement) {
-        return $('#' + chanName + ' ' + subElement)
+        return $('#' + escape(chanName) + ' ' + subElement)
       } else {
-        return $('#' + chanName);
+        return $('#' + escape(chanName));
       }
    }
 
@@ -43,7 +51,7 @@ $(document).ready(function(){
    var createChan = function(data) {
 
       $('#datalkChatTmpl').tmpl({chan : data.chanName}).appendTo('#tabs');
-      $('#tabs').tabs('add', "#"+data.chanName, "#"+data.chanName);
+      $('#tabs').tabs('add', "#"+data.chanName, "#"+ data.chanName);
       $( "#tabs" ).tabs( 'select', $( "#tabs" ).tabs('length') - 1);
 
       chanDiv(data.chanName, '.chatname').html("Channel #" + data.chanName);
@@ -52,9 +60,9 @@ $(document).ready(function(){
       $.each(data.messages, function(i, msg) { 
         $('#datalkMessageTmpl').tmpl({author: msg.author, message: msg.content}).appendTo(chanDiv(data.chanName, '.messages'))
       });
-
       $.each(data.users, function(i, nick) { 
         $('#datalkLiTmpl').tmpl({name: nick}).appendTo(chanDiv(data.chanName, '.users-list')) });
+            
 
       displayChannels(data.channels);
 
@@ -84,8 +92,8 @@ $(document).ready(function(){
   });
 
   socket.on("left-chan", function(chanName) {
-    $('#tabs').tabs('remove', "#"+chanName, "#"+chanName);
-    $('#tabs').remove("#"+chanName);
+    $('#tabs').tabs('remove', "#"+escape(chanName), "#"+escape(chanName));
+    $('#tabs').remove("#"+escape(chanName));
     $('#tabs .ui-tabs-panel:not(.ui-tabs-hide)').find('.message-input').focus();
   });
 
@@ -99,12 +107,12 @@ $(document).ready(function(){
 
   socket.on('show-help', function(chanName, helpMessages) {
     $.each(helpMessages, function(i, message) {
-      $('#systemMessageTmpl').tmpl({message: message}).appendTo('#'+chanName+' .messages');
+      $('#systemMessageTmpl').tmpl({message: message}).appendTo('#'+escape(chanName)+' .messages');
     });
   });
 
   socket.on('new-message', function(chanName, message) {
-    $('#datalkMessageTmpl').tmpl({author: message.author, message: message.content}).appendTo('#'+chanName+' .messages');
+    $('#datalkMessageTmpl').tmpl({author: message.author, message: message.content}).appendTo('#'+escape(chanName)+' .messages');
     chanDiv(chanName, '.messages').scrollTop(chanDiv(chanName, '.messages').prop("scrollHeight") - chanDiv(chanName, '.messages').height());
   });
 
@@ -115,7 +123,7 @@ $(document).ready(function(){
   //New user logged in
   socket.on("new-user", function(chanName, nickname, usersCount) {
     chanDiv(chanName, '.users-count').html(usersCount);
-    $('#datalkLiTmpl').tmpl({name: nickname}).appendTo('#'+chanName+' .users-list');
+    $('#datalkLiTmpl').tmpl({name: nickname}).appendTo('#'+escape(chanName)+' .users-list');
     chanDiv(chanName, '.messages').append("<li>"+ nickname + " joined.</li>");
   });
 

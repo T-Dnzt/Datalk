@@ -1,27 +1,42 @@
 var http = require("http");
 
 function TwitterConnector() {
-  this.method = 'GET';
-  this.host = 'search.twitter.com';
-  this.path = '/search.json?q=';
-} 
+  this.options = {
+    method: 'GET',
+    host: 'search.twitter.com'
+  }
+  this.tweets = [];
+  this.init = false;
+  this.interv = null;
+}
 
 TwitterConnector.prototype.search = function(tag, callback) {
-  console.log("Search "+tag);
-  var options = {method: this.method, host: this.host, path: this.path + tag};
 
-  var req = http.request(options, function(res) {
+  var connector = this;
+  tag = encodeURI('#'+tag);
+  this.options.path = '/search.json?lang=fr&q='+tag;
+  http.request(this.options, function(res) {
 
-    var responseData = [];
+  var responseData = [];
 
-    res.on('data', function(chunk){
-      responseData.push(chunk);
-    });
+  res.on('data', function(chunk){
+    responseData.push(chunk);
+  });
 
-    res.on('end', function() {
-      var tweets = JSON.parse(responseData.join('')).results;
-      callback(tweets);
-    });
+  res.on('end', function() {  
+    if (responseData.length > 0) {
+        connector.tweets = JSON.parse(responseData.join('')).results;
+        if(connector.tweets.length > 0) {
+          var random = Math.floor(Math.random() * connector.tweets.length);
+          var tweet = connector.tweets[random];
+          callback({author: tweet.from_user, content: tweet.text});
+        } else {
+          callback(null);
+        }
+    } else {
+       callback(null);
+    }
+  });
 
   }).end();
 }

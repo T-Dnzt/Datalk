@@ -1,9 +1,12 @@
+var twitter = require('./twitterconnector.js');
+
 function Chan(name) {
   this.name = name;
   this.users = [];
   this.messages = [];
   this.talkMessages = [];
   this.timeOut = null;
+  this.twitter = null;
 }
 
 function ChanManager(sockets) {
@@ -31,9 +34,9 @@ ChanManager.prototype.sendMessage = function(dbConnector, chanName, message, soc
     var manager = this;
 
     if(message.content[0] == "/") {
-        this.systemCommand(message, currentChan.name);
+        this.systemCommand(message, currentChan.name, dbConnector);
     } else {
-
+        console.log("new message");
         currentChan.messages.push(message);
         currentChan.talkMessages.push(message);
 
@@ -54,18 +57,20 @@ ChanManager.prototype.sendMessage = function(dbConnector, chanName, message, soc
     }
 }
 
-ChanManager.prototype.systemCommand = function(message, chanName) {
+ChanManager.prototype.systemCommand = function(message, chanName, dbConnector) {
     var commands = message.content.split(" ");
     var manager = this;
 
-    commands[1] = commands[1].replace(/#/g, '' );
+    if(commands[1]) {
+        commands[1] = commands[1].replace(/#/g, '' );
+    }
 
     if(commands[0] == "/logout" || commands[0] == "/l") {
         manager.disconnect(this.socket);
     } else if (commands[0] == "/help" || commands[0] == "/h") {
         manager.showHelp();
     } else if(commands[0] == "/join" || commands[0] == "/j" && commands[1] != undefined && commands[1] != "Datalk") {
-        manager.joinChan(commands[1], message.author);
+        manager.joinChan(commands[1], message.author, dbConnector);
     } else if(commands[0] == "/quit" || commands[0] == "/q" && commands[1] != "Datalk" && chanName != "Datalk") {
         if(commands[1] == undefined) {
             manager.quitChan(chanName, message.author);
@@ -88,10 +93,28 @@ ChanManager.prototype.showHelp = function() {
 
 }
 
-ChanManager.prototype.joinChan = function(chanName, nickname) {
+ChanManager.prototype.joinChan = function(chanName, nickname, dbConnector) {
     this.currentChan = this.getChan(chanName);
+    var manager = this;
+
+    this.currentChan.twitter = new twitter.TwitterConnector();
+
 
     if(this.currentChan.users.indexOf(nickname) == -1) {
+
+        if(this.currentChan.twitter.init == false) {
+            this.currentChan.twitter.init = true;
+            this.currentChan.twitter.interv = setInterval(function(){
+                manager.currentChan.twitter.search(chanName, function(message) {
+                    console.log(message);
+                    if(message) {
+                        console.log(message.content);
+                       manager.sendMessage(dbConnector, chanName, message, manager.socket);
+                    } 
+                });
+            }, 180000);
+        }
+
         this.currentChan.users.push(this.socket.nickname);
         this.sockets.emit("display-channels", Object.keys(this.channels));
         this.sockets.in(this.currentChan.name).emit("new-user", this.currentChan.name, this.socket.nickname, this.currentChan.users.length);
@@ -140,6 +163,7 @@ ChanManager.prototype.removeFromChan = function(chan, nickname) {
     this.sockets.in(chan.name).emit("user-left-chan", chan.name, nickname, chan.users.length);
 
     if(chan.users.length == 0) {
+        clearInterval(manager.currentChan.twitter.interv);
         delete manager.channels[chan.name];
         this.sockets.emit("display-channels", Object.keys(manager.channels));
     }

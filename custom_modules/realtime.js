@@ -4,9 +4,7 @@ var setup = function(io, dbConnector) {
 
     var chanManager = new chanManagerModule.ChanManager(io.sockets);
 
-
     io.sockets.on('connection', function(socket) {
-
 
         socket.on('login', function(nickname, callback) {
             chanManager.loginUser(nickname, callback, socket);

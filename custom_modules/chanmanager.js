@@ -36,7 +36,7 @@ ChanManager.prototype.computeMessage = function(chanName, message, socket) {
     if(message.content[0] == "/") {
         this.systemCommand(currentChan, socket, message);
     } else {
-       this.sendMessage(currentChan, message);
+       this.sendMessage(currentChan, message, true);
     }
 }
 
@@ -56,27 +56,29 @@ ChanManager.prototype.disconnect = function(socket) {
     }
 }
 
-ChanManager.prototype.sendMessage = function(chan, message) {
+ChanManager.prototype.sendMessage = function(chan, message, userMessage) {
 
     chan.messages.push(message);
     chan.talkMessages.push(message);
 
     this.sockets.in(chan.name).emit("new-message", chan.name, message);
 
-    if(chan.timeOut) {
-        clearTimeout(chan.timeOut);
+    if(userMessage == true) {
+        if(chan.timeOut) {
+            clearTimeout(chan.timeOut);
+        }
+
+        var manager = this;
+
+        chan.timeOut = setTimeout(function() {
+            var talk = {talkMessages: chan.talkMessages, chanName: chan.name};
+            manager.dbConnector.save("Talk", talk, function(permalink) {
+                manager.sockets.in(chan.name).emit("new-talk", chan.name, permalink);
+            });
+
+            chan.talkMessages = [];
+        }, 300000);
     }
-
-    var manager = this;
-
-    chan.timeOut = setTimeout(function() {
-        var talk = {talkMessages: chan.talkMessages, chanName: chan.name};
-        manager.dbConnector.save("Talk", talk, function(permalink) {
-            manager.sockets.in(chan.name).emit("new-talk", chan.name, permalink);
-        });
-
-        chan.talkMessages = [];
-    }, 300000);
 }
 
 //Handles commands typed by users
@@ -126,7 +128,7 @@ ChanManager.prototype.joinChan = function(chanName, socket, nickname) {
 
         chan.twitter.setup(chan.name, function(message) {
             if(message) {
-                manager.sendMessage(chan, message);
+                manager.sendMessage(chan, message, false);
             }
         });
 

@@ -17,7 +17,7 @@ TwitterConnector.prototype.setup = function(tag, callback) {
         this.init = true;
         this.interv = setInterval(function(){
             connector.search(tag, callback);
-        }, 180000);
+        }, 120000);
     }
 }
 
